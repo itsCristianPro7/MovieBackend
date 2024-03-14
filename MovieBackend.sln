@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovieBackend", "MovieBackend.csproj", "{8A4CA900-3173-4E05-8C18-963FDD3EBE71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovieBackend", "MovieBackend.csproj", "{8A4CA900-3173-4E05-8C18-963FDD3EBE71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDataAccess", "MongoDataAccess\MongoDataAccess.csproj", "{1A60A9B7-58D8-4E3E-BDBF-3DBB6C9979DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{8A4CA900-3173-4E05-8C18-963FDD3EBE71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A4CA900-3173-4E05-8C18-963FDD3EBE71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A4CA900-3173-4E05-8C18-963FDD3EBE71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A60A9B7-58D8-4E3E-BDBF-3DBB6C9979DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A60A9B7-58D8-4E3E-BDBF-3DBB6C9979DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A60A9B7-58D8-4E3E-BDBF-3DBB6C9979DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A60A9B7-58D8-4E3E-BDBF-3DBB6C9979DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

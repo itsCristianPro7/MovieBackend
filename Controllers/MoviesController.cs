@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MongoDataAccess.DataAccess;
 using MongoDataAccess.Models;
 
@@ -17,6 +18,7 @@ namespace MovieBackend.Controllers
         }
 
         // GET: api/<MoviesController>
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> Get()
         {

@@ -1,5 +1,12 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using MongoDataAccess.DataAccess;
 using MongoDataAccess.Models;
+using MovieBackend.Interfaces;
+using MovieBackend.Services;
+using System.Text;
+using ZstdSharp.Unsafe;
 
 namespace MovieBackend
 {
@@ -8,21 +15,48 @@ namespace MovieBackend
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            var config = builder.Configuration;
+            config.SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("secrets.json");
             // Add services to the container.
-            builder.Services.Configure<MongoDBSettings>(builder.Configuration.GetSection(nameof(MongoDBSettings)));
+            var mongoDBSettingsConfigurationSection = builder.Configuration.GetSection(nameof(MongoDBSettings));
+            var mongoDBSettings = mongoDBSettingsConfigurationSection.Get<MongoDBSettings>();
+            builder.Services.Configure<MongoDBSettings>(mongoDBSettingsConfigurationSection);
             builder.Services.AddSingleton<MovieSuggestionService>();
+            builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(o =>
+            {
+                o.Password.RequireDigit = false;
+                o.Password.RequireLowercase = false;
+                o.Password.RequireUppercase = false;
+                o.Password.RequireNonAlphanumeric = false;
+                o.Password.RequiredLength = 7;
+            })
+                .AddMongoDbStores<ApplicationUser, ApplicationRole, Guid>(
+                    mongoDBSettings.ConnectionString,
+                    mongoDBSettings.DatabaseName
+                );
 
-            //var db = new MovieSuggestionDataAccess();
-            //var actors = new List<string> { "Millie Bobby Brown" };
-            //await db.CreateMovie(new Movie() { Title = "Damsel",
-            //                             Director = "Juan Carlos Fresnadillo",
-            //                             ReleaseYear = 2024,
-            //                             Genre = "Fantasy/Adventure",
-            //                             Description = "A young woman agrees to marry a handsome prince -- only to discover it was all a trap. She is thrown into a cave with a fire-breathing dragon and must rely solely on her wits and will to survive.",
-            //                             Duration = TimeSpan.FromHours(1).Add(TimeSpan.FromMinutes(50)),
-            //});
-            
+            builder.Services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(x =>
+            {
+                x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidIssuer = config["JwtSettings:Issuer"],
+                    ValidAudience = config["JwtSettings:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:Key"])),
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true
+                };
+            });
+            builder.Services.AddAuthorization();
+
+            builder.Services.AddTransient<IAuthService, AuthService>();
+
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -39,6 +73,7 @@ namespace MovieBackend
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

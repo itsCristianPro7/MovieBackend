@@ -1,15 +1,15 @@
 ﻿using Microsoft.Extensions.Options;
-using MongoDataAccess.Models;
 using MongoDB.Driver;
-using MongoDB.Driver.Core.Configuration;
+using Movies.Api.Application.Services;
+using Movies.Api.Domain;
 
-namespace MongoDataAccess.DataAccess
+namespace Movies.Api.DataAccessLayer.DataAccess
 {
-    public class MovieSuggestionService
+    public class MovieSuggestionRepository : IMovieSuggestionRepository
     {
         private readonly IMongoCollection<Movie> _movieCollection;
 
-        public MovieSuggestionService(IOptions<MongoDBSettings> mongoDBSettings)
+        public MovieSuggestionRepository(IOptions<MongoDBSettings> mongoDBSettings)
         {
             var client = new MongoClient(mongoDBSettings.Value.ConnectionString);
             var db = client.GetDatabase(mongoDBSettings.Value.DatabaseName);
@@ -37,7 +37,7 @@ namespace MongoDataAccess.DataAccess
         public async Task UpdateMovie(string id, Movie movie)
         {
             var filter = Builders<Movie>.Filter.Eq("Id", id);
-            await _movieCollection.ReplaceOneAsync(filter, movie, new ReplaceOptions { IsUpsert = true});
+            await _movieCollection.ReplaceOneAsync(filter, movie, new ReplaceOptions { IsUpsert = true });
             return;
         }
 

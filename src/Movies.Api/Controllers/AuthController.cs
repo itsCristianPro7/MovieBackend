@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MongoDataAccess.Models;
-using MovieBackend.Interfaces;
+using Movies.Api.Domain;
+using Movies.Api.Filters;
+using Movies.Api.Interfaces;
+using Movies.Api.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace MovieBackend.Controllers
+namespace Movies.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -21,23 +23,10 @@ namespace MovieBackend.Controllers
             _roleManager = roleManager;
         }
 
+        [ValidateModel]
         [HttpPost("Register")]
         public async Task<IActionResult> RegisterUser(User user)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = new List<string>();
-                foreach (var state in ModelState)
-                {
-                    foreach (var error in state.Value.Errors)
-                    {
-                        errors.Add(error.ErrorMessage);
-                    }
-                }
-                return BadRequest(errors);
-            }
-
-
             var result = await _authService.Register(user);
             if (result)
             {
@@ -50,28 +39,20 @@ namespace MovieBackend.Controllers
 
         }
 
+        [ValidateModel]
         [HttpPost("Login")]
         public async Task<IActionResult> Login(User user)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = new List<string>();
-                foreach (var state in ModelState)
-                {
-                    foreach (var error in state.Value.Errors)
-                    {
-                        errors.Add(error.ErrorMessage);
-                    }
-                }
-                return BadRequest(errors);
-            }
-
-
             var result = await _authService.Login(user);
-            if (result)
+            if (result.succeeded)
             {
-                var token = await _authService.GenerateTokenAsync(user);
-                return Ok(token);
+                var response = new AuthResponse
+                {
+                    UserId = result.appUser.Id,
+                    Email = result.appUser.Email,
+                    Token = result.token
+                };
+                return Ok(response);
             }
             else
             {
@@ -79,22 +60,10 @@ namespace MovieBackend.Controllers
             }
         }
 
+        [ValidateModel]
         [HttpPost("CreateRole")]
         public async Task<IActionResult> CreateRole(UserRole userRole)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = new List<string>();
-                foreach (var state in ModelState)
-                {
-                    foreach (var error in state.Value.Errors)
-                    {
-                        errors.Add(error.ErrorMessage);
-                    }
-                }
-                return BadRequest(errors);
-            }
-
             var appRole = new ApplicationRole
             {
                 Name = userRole.RoleName
@@ -116,6 +85,7 @@ namespace MovieBackend.Controllers
             }
         }
 
+        [ValidateModel]
         [Authorize]
         [HttpPost("AssignRole")]
         public async Task<IActionResult> AssignRole(UserRoleAssignment userRoleAssignment)

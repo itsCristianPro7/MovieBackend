@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MongoDataAccess.Models
+namespace Movies.Api.Domain
 {
-    [CollectionName("roles")]
-    public class ApplicationRole : MongoIdentityRole<Guid>
+    [CollectionName("users")]
+    public class ApplicationUser : MongoIdentityUser<Guid>
     {
     }
 }

@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>d78d2dd6-231e-40c8-8e9a-872d6e6f7825</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="MongoDataAccess\MongoDataAccess.csproj" />
+    <ProjectReference Include="..\Movies.Api.Application\Movies.Api.Application.csproj" />
+    <ProjectReference Include="..\Movies.Api.DataAccessLayer\Movies.Api.DataAccessLayer.csproj" />
   </ItemGroup>
 
 </Project>

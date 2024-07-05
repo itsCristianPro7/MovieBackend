@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MongoDataAccess.Models
+namespace Movies.Api.Domain
 {
     public class MongoDBSettings
     {

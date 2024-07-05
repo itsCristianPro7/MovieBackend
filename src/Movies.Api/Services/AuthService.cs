@@ -1,14 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using MongoDataAccess.Models;
-using MovieBackend.Interfaces;
+using MongoDB.Driver.Linq;
+using Movies.Api.Domain;
+using Movies.Api.Interfaces;
+using Movies.Api.Models;
 using System.Collections.Generic;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace MovieBackend.Services
+namespace Movies.Api.Services
 {
     public class AuthService : IAuthService
     {
@@ -34,15 +36,19 @@ namespace MovieBackend.Services
             return result.Succeeded;
         }
 
-        public async Task<bool> Login(User user)
+        public async Task<(bool succeeded, ApplicationUser appUser, string token)> Login(User user)
         {
             var appUser = await _userManager.FindByEmailAsync(user.Email);
-            if (appUser is null)
+            var passwordValid = await _userManager.CheckPasswordAsync(appUser, user.Password);
+
+            if (appUser is null || !passwordValid)
             {
-                return false;
+                return (false, null, null);
             }
 
-            return await _userManager.CheckPasswordAsync(appUser, user.Password);
+            string tokenString = await GenerateTokenAsync(appUser);
+            
+            return (true, appUser, tokenString);
         }
 
         public async Task<bool> AssignRole(UserRoleAssignment userRoleAssignment)
@@ -57,30 +63,29 @@ namespace MovieBackend.Services
             return result.Succeeded;
         }
 
-        public async Task<string> GenerateTokenAsync(User user)
+        private async Task<string> GenerateTokenAsync(ApplicationUser appUser)
         {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Email, user.Email)
-            };
-
-            var appUser = await _userManager.FindByEmailAsync(user.Email);
             var roles = await _userManager.GetRolesAsync(appUser);
-            foreach (var role in roles)
+            var roleClaims = roles.Select(q => new Claim(ClaimTypes.Role, q)).ToList();
+
+            var claims = new List<Claim>
             {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-
+                new Claim(JwtRegisteredClaimNames.Sub, appUser.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, appUser.Email),
+                new Claim(CustomClaimTypes.Uid, appUser.Id.ToString())
             }
+            .Union(roleClaims);
 
-            var jwtKey = _config.GetSection("JwtSettings:Key").Value;
+            var jwtKey = _config["JwtSettings:Key"];
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
 
             var securityToken = new JwtSecurityToken(
                 claims:claims,
-                expires: DateTime.Now.AddMinutes(60),
-                issuer: _config.GetSection("JwtSettings:Issuer").Value,
-                audience: _config.GetSection("JwtSettings:Audience").Value,
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(_config["JwtSettings:Duration"])),
+                issuer: _config["JwtSettings:Issuer"],
+                audience: _config["JwtSettings:Audience"],
                 signingCredentials:signingCredentials
                 );
             string tokenString = new JwtSecurityTokenHandler().WriteToken(securityToken);

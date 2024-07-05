@@ -12,10 +12,10 @@ namespace Movies.Api.Controllers
     [ApiController]
     public class MoviesController : ControllerBase
     {
-        private readonly IMovieSuggestionService _movieSuggestionService;
-        public MoviesController(IMovieSuggestionService movieSuggestionService)
+        private readonly IMovieSuggestionRepository _movieSuggestionRepository;
+        public MoviesController(IMovieSuggestionRepository movieSuggestionRepository)
         {
-            _movieSuggestionService = movieSuggestionService;
+            _movieSuggestionRepository = movieSuggestionRepository;
         }
 
         // GET: api/<MoviesController>
@@ -23,21 +23,21 @@ namespace Movies.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return Ok(await _movieSuggestionService.GetMoviesAsync());
+            return Ok(await _movieSuggestionRepository.GetMoviesAsync());
         }
 
         // GET api/<MoviesController>/5
         [HttpGet("{id}")]
         public async Task<Movie> Get(string id)
         {
-            return await _movieSuggestionService.GetMovieAsync(id);
+            return await _movieSuggestionRepository.GetMovieAsync(id);
         }
 
         // POST api/<MoviesController>
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Movie movie)
         {
-            await _movieSuggestionService.CreateMovie(movie);
+            await _movieSuggestionRepository.CreateMovie(movie);
             return CreatedAtAction(nameof(Get), new { id = movie.Id}, movie);
         }
 
@@ -45,7 +45,7 @@ namespace Movies.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] Movie movie)
         {
-            await _movieSuggestionService.UpdateMovie(id, movie);
+            await _movieSuggestionRepository.UpdateMovie(id, movie);
             return NoContent();
         }
 
@@ -53,7 +53,7 @@ namespace Movies.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            await _movieSuggestionService.DeleteMovie(id);
+            await _movieSuggestionRepository.DeleteMovie(id);
             return NoContent();
         }
     }

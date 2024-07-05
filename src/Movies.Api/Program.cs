@@ -17,7 +17,6 @@ namespace MovieBackend
             var config = builder.Configuration;
 
             builder.Services.AddIdentityAndPersistence(config);
-            builder.Services.AddScoped<IMovieSuggestionService, MovieSuggestionService>();
             builder.Services.AddTransient<IAuthService, AuthService>();
 
             builder.Services.AddAuthorization();
